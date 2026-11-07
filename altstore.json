@@ -1,0 +1,30 @@
+{
+  "name": "AJ Front Desk",
+  "identifier": "com.itspector.frontdesk.altstore",
+  "sourceURL": "https://raw.githubusercontent.com/ssnanda/ajfrontdesk/main/altstore.json",
+  "apps": [
+    {
+      "name": "AJ Front Desk",
+      "bundleIdentifier": "com.itspector.frontdesk",
+      "developerName": "IT Spector LLC",
+      "subtitle": "Visitor check-in kiosk",
+      "localizedDescription": "AJ Front Desk — visitor check-in kiosk for AJ Core RA sites.",
+      "iconURL": "https://raw.githubusercontent.com/ssnanda/ajfrontdesk/main/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-1024x1024%401x.png",
+      "tintColor": "1A3C6E",
+      "category": "utilities",
+      "screenshotURLs": [],
+      "versions": [
+        {
+          "version": "1.0.0",
+          "buildVersion": "1",
+          "date": "2026-11-07",
+          "localizedDescription": "Build 1.0.0+1",
+          "downloadURL": "https://github.com/ssnanda/ajfrontdesk/releases/download/ios-latest/ajfrontdesk.ipa",
+          "size": 7246930,
+          "minOSVersion": "13.0"
+        }
+      ]
+    }
+  ],
+  "news": []
+}
