@@ -2,14 +2,12 @@ import 'package:flutter/material.dart';
 
 class ActionTile extends StatelessWidget {
   final String title;
-  final String subtitle;
   final IconData icon;
   final VoidCallback onPressed;
 
   const ActionTile({
     super.key,
     required this.title,
-    required this.subtitle,
     required this.icon,
     required this.onPressed,
   });
@@ -37,11 +35,11 @@ class ActionTile extends StatelessWidget {
           borderRadius: BorderRadius.circular(24),
           onTap: onPressed,
           child: Padding(
-            padding: EdgeInsets.all(compact ? 18 : 32.0),
+            padding: EdgeInsets.all(compact ? 26 : 48.0),
             child: Row(
               children: [
                 Container(
-                  padding: EdgeInsets.all(compact ? 12 : 20),
+                  padding: EdgeInsets.all(compact ? 16 : 28),
                   decoration: BoxDecoration(
                     color: Theme.of(
                       context,
@@ -50,7 +48,7 @@ class ActionTile extends StatelessWidget {
                   ),
                   child: Icon(
                     icon,
-                    size: compact ? 26 : 36,
+                    size: compact ? 36 : 56,
                     color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
@@ -62,20 +60,15 @@ class ActionTile extends StatelessWidget {
                       Text(
                         title,
                         style: TextStyle(
-                          fontSize: compact ? 20 : 26,
+                          fontSize: compact ? 28 : 44,
                           fontWeight: FontWeight.w600,
                           color: Colors.black87,
                         ),
                       ),
-                      SizedBox(height: compact ? 4 : 8),
-                      Text(
-                        subtitle,
-                        style: TextStyle(fontSize: compact ? 14 : 18, color: Colors.grey[600]),
-                      ),
                     ],
                   ),
                 ),
-                Icon(Icons.chevron_right, color: Colors.grey[400], size: compact ? 24 : 36),
+                Icon(Icons.chevron_right, color: Colors.grey[400], size: compact ? 32 : 52),
               ],
             ),
           ),

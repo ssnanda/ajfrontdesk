@@ -65,7 +65,6 @@ class HomeScreen extends StatelessWidget {
                         children: [
                           ActionTile(
                             title: 'Appointment',
-                            subtitle: 'I already have a scheduled visit',
                             icon: Icons.calendar_today_rounded,
                             onPressed: () => Navigator.push(
                               context,
@@ -79,7 +78,6 @@ class HomeScreen extends StatelessWidget {
                           ),
                           ActionTile(
                             title: 'Walk-In',
-                            subtitle: 'I’m here without an appointment',
                             icon: Icons.directions_walk_rounded,
                             onPressed: () => Navigator.push(
                               context,
@@ -93,7 +91,6 @@ class HomeScreen extends StatelessWidget {
                           ),
                           ActionTile(
                             title: 'Returning Visitor',
-                            subtitle: 'Use phone number for faster check-in',
                             icon: Icons.person_search_rounded,
                             onPressed: () => Navigator.push(
                               context,
