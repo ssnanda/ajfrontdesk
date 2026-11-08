@@ -16,8 +16,10 @@ class ActionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Phones get a tighter tile so titles never wrap mid-word; iPads keep the large touch targets.
+    final compact = MediaQuery.sizeOf(context).width < 600;
     return Container(
-      margin: const EdgeInsets.only(bottom: 24),
+      margin: EdgeInsets.only(bottom: compact ? 14 : 24),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
@@ -35,11 +37,11 @@ class ActionTile extends StatelessWidget {
           borderRadius: BorderRadius.circular(24),
           onTap: onPressed,
           child: Padding(
-            padding: const EdgeInsets.all(32.0),
+            padding: EdgeInsets.all(compact ? 18 : 32.0),
             child: Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(20),
+                  padding: EdgeInsets.all(compact ? 12 : 20),
                   decoration: BoxDecoration(
                     color: Theme.of(
                       context,
@@ -48,32 +50,32 @@ class ActionTile extends StatelessWidget {
                   ),
                   child: Icon(
                     icon,
-                    size: 36,
+                    size: compact ? 26 : 36,
                     color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
-                const SizedBox(width: 32),
+                SizedBox(width: compact ? 14 : 32),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         title,
-                        style: const TextStyle(
-                          fontSize: 26,
+                        style: TextStyle(
+                          fontSize: compact ? 20 : 26,
                           fontWeight: FontWeight.w600,
                           color: Colors.black87,
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      SizedBox(height: compact ? 4 : 8),
                       Text(
                         subtitle,
-                        style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+                        style: TextStyle(fontSize: compact ? 14 : 18, color: Colors.grey[600]),
                       ),
                     ],
                   ),
                 ),
-                Icon(Icons.chevron_right, color: Colors.grey[400], size: 36),
+                Icon(Icons.chevron_right, color: Colors.grey[400], size: compact ? 24 : 36),
               ],
             ),
           ),

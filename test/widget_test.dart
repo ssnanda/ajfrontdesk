@@ -16,7 +16,7 @@ void main() {
     SharedPreferences.setMockInitialValues({'site_url': 'https://example.com/wp-json/ajcore/v1', 'device_key': 'k', 'pin': '1234', 'site_name': 'Example'});
     await AppConfig.load();
     await tester.pumpWidget(const ReceptionApp());
-    expect(find.text('Welcome to Example'), findsOneWidget);
+    expect(find.textContaining('Welcome'), findsNothing); // just the buttons
     expect(find.text('Appointment'), findsOneWidget);
     expect(find.text('Walk-In'), findsOneWidget);
     expect(find.text('Returning Visitor'), findsOneWidget);

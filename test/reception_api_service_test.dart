@@ -16,7 +16,7 @@ void main() {
     expect(staff.isPerson, isTrue);
     expect(staff.id, '12');
     expect(customer.isPerson, isFalse);
-    expect(customer.subtitle, 'PMB 12');
+    expect(customer.subtitle, isNull); // names only
   });
 
   test('CheckInRequest sends the host type and id', () {

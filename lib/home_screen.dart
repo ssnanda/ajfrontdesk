@@ -46,47 +46,23 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
+      body: Stack(children: [
+        SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
             return SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(vertical: 32),
+              padding: EdgeInsets.symmetric(vertical: MediaQuery.sizeOf(context).width < 600 ? 20 : 32),
               child: ConstrainedBox(
                 constraints: BoxConstraints(minHeight: constraints.maxHeight),
                 child: Center(
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 700),
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                      padding: EdgeInsets.symmetric(horizontal: MediaQuery.sizeOf(context).width < 600 ? 16 : 32.0),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          GestureDetector(
-                            // Staff only: long-press, then the PIN, to change or reset this iPad's setup.
-                            onLongPress: () => _openSettings(context),
-                            child: Text(
-                              AppConfig.siteName.isEmpty
-                                  ? 'Welcome — Check In'
-                                  : 'Welcome to ${AppConfig.siteName}',
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                fontSize: 42,
-                                fontWeight: FontWeight.w400,
-                                color: Colors.black87,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            'Please select how you would like to proceed today.',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 20,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                          const SizedBox(height: 64),
                           ActionTile(
                             title: 'Appointment',
                             subtitle: 'I already have a scheduled visit',
@@ -136,6 +112,19 @@ class HomeScreen extends StatelessWidget {
           },
         ),
       ),
+        // Staff only: press and hold the top-left corner, then enter the PIN, to reset this device. Invisible on purpose.
+        Positioned(
+          left: 0,
+          top: 0,
+          child: SafeArea(
+            child: GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onLongPress: () => _openSettings(context),
+              child: const SizedBox(width: 72, height: 72),
+            ),
+          ),
+        ),
+      ]),
     );
   }
 }

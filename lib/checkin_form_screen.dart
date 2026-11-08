@@ -121,9 +121,9 @@ class _CheckInFormScreenState extends State<CheckInFormScreen> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(24),
                       ),
-                      margin: const EdgeInsets.all(32),
+                      margin: EdgeInsets.all(MediaQuery.sizeOf(context).width < 600 ? 12 : 32),
                       child: Padding(
-                        padding: const EdgeInsets.all(48),
+                        padding: EdgeInsets.all(MediaQuery.sizeOf(context).width < 600 ? 20 : 48),
                         child: Form(
                           key: _formKey,
                           child: Column(

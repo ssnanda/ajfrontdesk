@@ -178,9 +178,9 @@ class _ReturningVisitorScreenState extends State<ReturningVisitorScreen> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(24),
                       ),
-                      margin: const EdgeInsets.all(32),
+                      margin: EdgeInsets.all(MediaQuery.sizeOf(context).width < 600 ? 12 : 32),
                       child: Padding(
-                        padding: const EdgeInsets.all(48),
+                        padding: EdgeInsets.all(MediaQuery.sizeOf(context).width < 600 ? 20 : 48),
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           crossAxisAlignment: CrossAxisAlignment.stretch,

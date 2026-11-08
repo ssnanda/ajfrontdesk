@@ -273,12 +273,6 @@ class _HostSearchFieldState extends State<HostSearchField> {
                     ),
                     itemBuilder: (context, index) {
                       final host = _results[index];
-                      final subtitle =
-                          host.subtitle == null || host.subtitle!.isEmpty
-                          ? host.isPerson
-                                ? 'Staff'
-                                : 'Customer'
-                          : '${host.isPerson ? 'Staff' : 'Customer'} • ${host.subtitle!}';
                       return ListTile(
                         contentPadding: const EdgeInsets.symmetric(
                           horizontal: 20,
@@ -291,7 +285,6 @@ class _HostSearchFieldState extends State<HostSearchField> {
                             fontWeight: FontWeight.w600,
                           ),
                         ),
-                        subtitle: Text(subtitle),
                         onTap: () => _selectHost(host),
                       );
                     },

@@ -18,7 +18,7 @@ class ReceptionHost {
       id: (json['id'] ?? '').toString(),
       hostType: (json['host_type'] ?? '') as String,
       label: (json['label'] ?? '') as String,
-      subtitle: json['subtitle'] as String?,
+      subtitle: null, // the kiosk shows names only, whatever the server sends
     );
   }
 }
