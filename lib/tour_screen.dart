@@ -1,0 +1,227 @@
+import 'package:flutter/material.dart';
+
+import 'checkin_request.dart';
+import 'checkin_success_dialog.dart';
+import 'reception_api_service.dart';
+
+/// Tour: a prospect here to look at suites. No host to pick; the point is capturing their details.
+class TourScreen extends StatefulWidget {
+  const TourScreen({super.key});
+
+  @override
+  State<TourScreen> createState() => _TourScreenState();
+}
+
+class _TourScreenState extends State<TourScreen> {
+  static const _interests = [
+    'Private office',
+    'Coworking / desk',
+    'Virtual office / mailing address',
+    'Meeting room',
+    'Not sure yet',
+  ];
+
+  final _formKey = GlobalKey<FormState>();
+  final _name = TextEditingController();
+  final _phone = TextEditingController();
+  final _email = TextEditingController();
+  final _company = TextEditingController();
+  final _teamSize = TextEditingController();
+  final _notes = TextEditingController();
+  final _apiService = ReceptionApiService();
+
+  final Set<String> _selected = {};
+  bool _isSubmitting = false;
+
+  @override
+  void dispose() {
+    _name.dispose();
+    _phone.dispose();
+    _email.dispose();
+    _company.dispose();
+    _teamSize.dispose();
+    _notes.dispose();
+    super.dispose();
+  }
+
+  /// Everything the visit record has no column for goes into its note, one labelled line each.
+  String _composeNotes() {
+    final lines = <String>[
+      if (_company.text.trim().isNotEmpty) 'Company: ${_company.text.trim()}',
+      if (_selected.isNotEmpty) 'Interested in: ${_selected.join(', ')}',
+      if (_teamSize.text.trim().isNotEmpty) 'Team size: ${_teamSize.text.trim()}',
+      if (_notes.text.trim().isNotEmpty) 'Notes: ${_notes.text.trim()}',
+    ];
+    return lines.join('\n');
+  }
+
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+    setState(() => _isSubmitting = true);
+    final response = await _apiService.checkIn(
+      CheckInRequest(
+        visitType: 'tour',
+        fullName: _name.text.trim(),
+        phone: _phone.text.trim(),
+        hostType: 'tour',
+        hostId: '',
+        email: _email.text.trim().isEmpty ? null : _email.text.trim(),
+        notes: _composeNotes().isEmpty ? null : _composeNotes(),
+      ),
+    );
+    if (!mounted) {
+      return;
+    }
+    setState(() => _isSubmitting = false);
+
+    if (response.success) {
+      await showCheckInSuccessDialog(
+        context,
+        title: 'Thank You!',
+        message: '${response.guestName ?? _name.text.trim()}, someone will be with you shortly for your tour.',
+        guestCode: response.guestCode,
+      );
+      if (!mounted) {
+        return;
+      }
+      Navigator.popUntil(context, (route) => route.isFirst);
+      return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(response.message ?? 'Check-in failed.')),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final compact = MediaQuery.sizeOf(context).width < 600;
+    final decoration = InputDecoration(
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide.none,
+      ),
+      filled: true,
+      fillColor: Colors.grey[100],
+      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+    );
+    const fieldStyle = TextStyle(fontSize: 20);
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('Tour')),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(vertical: 24),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 640),
+              child: Card(
+                elevation: 0,
+                color: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                margin: EdgeInsets.all(compact ? 12 : 32),
+                child: Padding(
+                  padding: EdgeInsets.all(compact ? 20 : 48),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        const Text(
+                          'Tell Us About Yourself',
+                          style: TextStyle(fontSize: 28, fontWeight: FontWeight.w600),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 32),
+                        TextFormField(
+                          controller: _name,
+                          textCapitalization: TextCapitalization.words,
+                          decoration: decoration.copyWith(labelText: 'Full Name', prefixIcon: const Icon(Icons.person_outline)),
+                          style: fieldStyle,
+                          validator: (v) => v == null || v.trim().isEmpty ? 'Name is required' : null,
+                        ),
+                        const SizedBox(height: 20),
+                        TextFormField(
+                          controller: _phone,
+                          keyboardType: TextInputType.phone,
+                          decoration: decoration.copyWith(labelText: 'Phone Number', prefixIcon: const Icon(Icons.phone_outlined)),
+                          style: fieldStyle,
+                          validator: (v) => v == null || v.trim().isEmpty ? 'Phone is required' : null,
+                        ),
+                        const SizedBox(height: 20),
+                        TextFormField(
+                          controller: _email,
+                          keyboardType: TextInputType.emailAddress,
+                          decoration: decoration.copyWith(labelText: 'Email', prefixIcon: const Icon(Icons.mail_outline)),
+                          style: fieldStyle,
+                          validator: (v) {
+                            final t = v?.trim() ?? '';
+                            if (t.isEmpty) return 'Email is required';
+                            return RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(t) ? null : 'Enter a valid email';
+                          },
+                        ),
+                        const SizedBox(height: 20),
+                        TextFormField(
+                          controller: _company,
+                          textCapitalization: TextCapitalization.words,
+                          decoration: decoration.copyWith(labelText: 'Company (optional)', prefixIcon: const Icon(Icons.business_outlined)),
+                          style: fieldStyle,
+                        ),
+                        const SizedBox(height: 28),
+                        const Text('What are you looking for?', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+                        const SizedBox(height: 12),
+                        Wrap(
+                          spacing: 10,
+                          runSpacing: 10,
+                          children: [
+                            for (final option in _interests)
+                              FilterChip(
+                                label: Text(option, style: const TextStyle(fontSize: 17)),
+                                selected: _selected.contains(option),
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+                                onSelected: (on) => setState(() => on ? _selected.add(option) : _selected.remove(option)),
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+                        TextFormField(
+                          controller: _teamSize,
+                          keyboardType: TextInputType.number,
+                          decoration: decoration.copyWith(labelText: 'How many people? (optional)', prefixIcon: const Icon(Icons.groups_outlined)),
+                          style: fieldStyle,
+                        ),
+                        const SizedBox(height: 20),
+                        TextFormField(
+                          controller: _notes,
+                          maxLines: 3,
+                          decoration: decoration.copyWith(labelText: 'Anything else we should know? (optional)'),
+                          style: fieldStyle,
+                        ),
+                        const SizedBox(height: 40),
+                        SizedBox(
+                          height: 64,
+                          child: ElevatedButton(
+                            onPressed: _isSubmitting ? null : _submit,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Theme.of(context).colorScheme.primary,
+                              foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                            ),
+                            child: _isSubmitting
+                                ? const CircularProgressIndicator(color: Colors.white)
+                                : const Text('Submit', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

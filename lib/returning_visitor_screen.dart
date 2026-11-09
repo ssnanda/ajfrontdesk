@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'checkin_form_screen.dart';
+import 'checkin_flow_screen.dart';
 import 'checkin_request.dart';
 import 'checkin_success_dialog.dart';
 import 'host_search_field.dart';
@@ -264,9 +264,7 @@ class _ReturningVisitorScreenState extends State<ReturningVisitorScreen> {
                                   onPressed: () => Navigator.pushReplacement(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (_) => CheckInFormScreen(
-                                        title: 'Walk-In',
-                                        visitType: 'walk_in',
+                                      builder: (_) => CheckInFlowScreen(
                                         initialPhone: _phoneController.text
                                             .trim(),
                                       ),

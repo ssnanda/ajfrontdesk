@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'app_config.dart';
 import 'setup_screen.dart';
 import 'returning_visitor_screen.dart';
-import 'checkin_form_screen.dart';
+import 'checkin_flow_screen.dart';
+import 'tour_screen.dart';
 import 'action_tile.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -64,29 +65,19 @@ class HomeScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           ActionTile(
-                            title: 'Appointment',
-                            icon: Icons.calendar_today_rounded,
+                            title: 'Tour',
+                            icon: Icons.apartment_rounded,
                             onPressed: () => Navigator.push(
                               context,
-                              MaterialPageRoute(
-                                builder: (_) => const CheckInFormScreen(
-                                  title: 'Appointment',
-                                  visitType: 'appointment',
-                                ),
-                              ),
+                              MaterialPageRoute(builder: (_) => const TourScreen()),
                             ),
                           ),
                           ActionTile(
-                            title: 'Walk-In',
-                            icon: Icons.directions_walk_rounded,
+                            title: 'Check In',
+                            icon: Icons.login_rounded,
                             onPressed: () => Navigator.push(
                               context,
-                              MaterialPageRoute(
-                                builder: (_) => const CheckInFormScreen(
-                                  title: 'Walk-In',
-                                  visitType: 'walk_in',
-                                ),
-                              ),
+                              MaterialPageRoute(builder: (_) => const CheckInFlowScreen()),
                             ),
                           ),
                           ActionTile(
