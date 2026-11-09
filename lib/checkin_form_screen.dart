@@ -78,6 +78,7 @@ class _CheckInFormScreenState extends State<CheckInFormScreen> {
         context,
         title: 'Check-In Complete',
         message: '$guestName is checked in for ${widget.title.toLowerCase()}.',
+        guestCode: response.guestCode,
       );
       if (!mounted) {
         return;

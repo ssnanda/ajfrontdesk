@@ -147,6 +147,7 @@ class _ReturningVisitorScreenState extends State<ReturningVisitorScreen> {
         context,
         title: 'Check-In Complete',
         message: '${response.guestName ?? _visitor!.name} is checked in.',
+        guestCode: response.guestCode,
       );
       if (!mounted) {
         return;
