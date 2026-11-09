@@ -18,12 +18,12 @@ class ReceptionApp extends StatelessWidget {
       title: 'AJ Front Desk',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.blueGrey,
+          seedColor: const Color(0xFF4F46E5),
           brightness: Brightness.light,
           surface: Colors.white,
         ),
         useMaterial3: true,
-        scaffoldBackgroundColor: const Color(0xFFF7F9FC),
+        scaffoldBackgroundColor: const Color(0xFFEEF2FF),
         appBarTheme: const AppBarTheme(
           backgroundColor: Colors.transparent,
           elevation: 0,
@@ -31,13 +31,17 @@ class ReceptionApp extends StatelessWidget {
           iconTheme: IconThemeData(color: Colors.black87),
           titleTextStyle: TextStyle(
             color: Colors.black87,
-            fontSize: 24,
-            fontWeight: FontWeight.w500,
+            fontSize: 30,
+            fontWeight: FontWeight.w700,
           ),
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
             elevation: 0,
+            minimumSize: const Size.fromHeight(72),
+            backgroundColor: const Color(0xFF4F46E5),
+            foregroundColor: Colors.white,
+            textStyle: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),

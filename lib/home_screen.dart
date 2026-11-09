@@ -63,20 +63,31 @@ class HomeScreen extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          ActionTile(
-                            title: 'Tour',
-                            icon: Icons.apartment_rounded,
-                            onPressed: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (_) => const TourScreen()),
+                          const Padding(
+                            padding: EdgeInsets.only(bottom: 36),
+                            child: Text(
+                              'Welcome!',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(fontSize: 52, fontWeight: FontWeight.w800, color: Color(0xFF312E81)),
                             ),
                           ),
                           ActionTile(
                             title: 'Check In',
                             icon: Icons.login_rounded,
+                            gradient: const [Color(0xFF6366F1), Color(0xFF4338CA)],
                             onPressed: () => Navigator.push(
                               context,
                               MaterialPageRoute(builder: (_) => const CheckInFlowScreen()),
+                            ),
+                          ),
+                          ActionTile(
+                            title: 'Tour',
+                            icon: Icons.apartment_rounded,
+                            scale: 0.8,
+                            gradient: const [Color(0xFF14B8A6), Color(0xFF0F766E)],
+                            onPressed: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (_) => const TourScreen()),
                             ),
                           ),
                         ],

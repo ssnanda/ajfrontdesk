@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'checkin_request.dart';
 import 'checkin_success_dialog.dart';
-import 'phone_formatter.dart';
+import 'phone_keypad.dart';
 import 'reception_api_service.dart';
 import 'reception_host.dart';
 
@@ -191,14 +191,15 @@ class _CheckInFlowScreenState extends State<CheckInFlowScreen> {
 
   InputDecoration _decoration(String label, IconData icon) => InputDecoration(
     labelText: label,
-    prefixIcon: Icon(icon),
-    border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
-      borderSide: BorderSide.none,
-    ),
+    labelStyle: const TextStyle(fontSize: 22),
+    floatingLabelStyle: const TextStyle(fontSize: 22, fontWeight: FontWeight.w600, color: Color(0xFF4338CA)),
+    prefixIcon: Icon(icon, size: 30, color: const Color(0xFF4F46E5)),
+    border: OutlineInputBorder(borderRadius: BorderRadius.circular(18), borderSide: BorderSide.none),
+    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(18), borderSide: const BorderSide(color: Color(0xFFC7D2FE), width: 2)),
+    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(18), borderSide: const BorderSide(color: Color(0xFF4F46E5), width: 3)),
     filled: true,
-    fillColor: Colors.grey[100],
-    contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+    fillColor: Colors.white,
+    contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
   );
 
   Widget _question(String text) => Padding(
@@ -206,7 +207,7 @@ class _CheckInFlowScreenState extends State<CheckInFlowScreen> {
     child: Text(
       text,
       textAlign: TextAlign.center,
-      style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w600),
+      style: const TextStyle(fontSize: 40, fontWeight: FontWeight.w800, color: Color(0xFF312E81), height: 1.15),
     ),
   );
 
@@ -223,7 +224,7 @@ class _CheckInFlowScreenState extends State<CheckInFlowScreen> {
             autofocus: true,
             textInputAction: TextInputAction.search,
             onChanged: _onSearchChanged,
-            style: const TextStyle(fontSize: 22),
+            style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w600),
             decoration: _decoration('Type a name or company', Icons.search).copyWith(
               suffixIcon: _searching
                   ? const Padding(
@@ -237,7 +238,7 @@ class _CheckInFlowScreenState extends State<CheckInFlowScreen> {
           // Everything between the search box and the keyboard belongs to the results.
           Expanded(
             child: _searchError != null
-                ? Text(_searchError!, style: TextStyle(color: Theme.of(context).colorScheme.error, fontSize: 16))
+                ? Text(_searchError!, style: TextStyle(color: Theme.of(context).colorScheme.error, fontSize: 22))
                 : _results.isEmpty
                 ? Padding(
                     padding: const EdgeInsets.only(top: 12),
@@ -246,7 +247,7 @@ class _CheckInFlowScreenState extends State<CheckInFlowScreen> {
                           ? 'Start typing to find them.'
                           : (_searching ? '' : 'No one found. Try a different name or company.'),
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+                      style: TextStyle(fontSize: 24, color: Colors.grey[700]),
                     ),
                   )
                 : ListView.separated(
@@ -257,16 +258,27 @@ class _CheckInFlowScreenState extends State<CheckInFlowScreen> {
                       final host = _results[index];
                       return Material(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
+                        elevation: 1,
+                        shadowColor: const Color(0x22000000),
+                        borderRadius: BorderRadius.circular(20),
                         child: InkWell(
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(20),
                           onTap: () => _pick(host),
                           child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 22),
                             child: Row(
                               children: [
-                                Expanded(child: Text(host.label, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w600))),
-                                Icon(Icons.chevron_right, color: Colors.grey[400], size: 28),
+                                CircleAvatar(
+                                  radius: 26,
+                                  backgroundColor: const Color(0xFFE0E7FF),
+                                  child: Text(
+                                    host.label.isEmpty ? '?' : host.label.trim()[0].toUpperCase(),
+                                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: Color(0xFF4338CA)),
+                                  ),
+                                ),
+                                const SizedBox(width: 18),
+                                Expanded(child: Text(host.label, style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w700))),
+                                const Icon(Icons.chevron_right_rounded, color: Color(0xFF6366F1), size: 36),
                               ],
                             ),
                           ),
@@ -295,12 +307,12 @@ class _CheckInFlowScreenState extends State<CheckInFlowScreen> {
                 field,
                 const SizedBox(height: 32),
                 SizedBox(
-                  height: 64,
+                  height: 80,
                   child: ElevatedButton(
                     onPressed: busy ? null : onNext,
                     child: busy
                         ? const CircularProgressIndicator(color: Colors.white)
-                        : const Text('Next', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                        : const Text('Next', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800)),
                   ),
                 ),
               ],
@@ -317,15 +329,21 @@ class _CheckInFlowScreenState extends State<CheckInFlowScreen> {
       question: 'What\'s your phone number?',
       busy: _lookingUp,
       onNext: _phoneNext,
-      field: TextFormField(
-        controller: _phone,
-        autofocus: true,
-        keyboardType: TextInputType.number,
-                          inputFormatters: const [PhoneDashFormatter()],
-        style: const TextStyle(fontSize: 22),
-        decoration: _decoration('Phone Number', Icons.phone_outlined),
-        validator: (v) => v == null || v.trim().isEmpty ? 'Phone is required' : null,
-        onFieldSubmitted: (_) => _phoneNext(),
+      field: Column(
+        children: [
+          TextFormField(
+            controller: _phone,
+            readOnly: true, // typed with the big keypad below, so the OS keypad never covers the field
+            showCursor: true,
+            keyboardType: TextInputType.none,
+            style: const TextStyle(fontSize: 40, fontWeight: FontWeight.w800, letterSpacing: 2),
+            textAlign: TextAlign.center,
+            decoration: _decoration('Phone Number', Icons.phone_outlined),
+            validator: (v) => v == null || v.trim().length < 10 ? 'Enter all 10 digits' : null,
+          ),
+          const SizedBox(height: 16),
+          PhoneKeypad(controller: _phone),
+        ],
       ),
     );
   }
@@ -340,7 +358,7 @@ class _CheckInFlowScreenState extends State<CheckInFlowScreen> {
         controller: _name,
         autofocus: true,
         textCapitalization: TextCapitalization.words,
-        style: const TextStyle(fontSize: 22),
+        style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w600),
         decoration: _decoration('Full Name', Icons.person_outline),
         validator: (v) => v == null || v.trim().isEmpty ? 'Name is required' : null,
         onFieldSubmitted: (_) => _nameNext(),
@@ -349,12 +367,13 @@ class _CheckInFlowScreenState extends State<CheckInFlowScreen> {
   }
 
   Widget _appointmentStep() {
-    Widget choice(String label, IconData icon, bool value) => SizedBox(
-      height: 88,
+    Widget choice(String label, IconData icon, bool value, Color color) => SizedBox(
+      height: 120,
       child: ElevatedButton.icon(
+        style: ElevatedButton.styleFrom(backgroundColor: color, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28))),
         onPressed: _submitting ? null : () => _submit(value),
-        icon: Icon(icon, size: 30),
-        label: Text(label, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w600)),
+        icon: Icon(icon, size: 42),
+        label: Text(label, style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w800)),
       ),
     );
     return Padding(
@@ -370,9 +389,9 @@ class _CheckInFlowScreenState extends State<CheckInFlowScreen> {
               if (_submitting)
                 const Center(child: Padding(padding: EdgeInsets.all(24), child: CircularProgressIndicator()))
               else ...[
-                choice('Yes, I have an appointment', Icons.event_available_rounded, true),
-                const SizedBox(height: 16),
-                choice('No, I just stopped by', Icons.directions_walk_rounded, false),
+                choice('Yes, I have an appointment', Icons.event_available_rounded, true, const Color(0xFF16A34A)),
+                const SizedBox(height: 20),
+                choice('No, I just stopped by', Icons.directions_walk_rounded, false, const Color(0xFFF59E0B)),
               ],
             ],
           ),
@@ -396,12 +415,37 @@ class _CheckInFlowScreenState extends State<CheckInFlowScreen> {
           leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: _back),
         ),
         body: SafeArea(
-          child: switch (_step) {
-            _Step.host => _hostStep(),
-            _Step.phone => _phoneStep(),
-            _Step.name => _nameStep(),
-            _Step.appointment => _appointmentStep(),
-          },
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 4, 24, 12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Step ${_step.index + 1} of ${_Step.values.length}', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: Color(0xFF4338CA))),
+                    const SizedBox(height: 8),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: LinearProgressIndicator(
+                        value: (_step.index + 1) / _Step.values.length,
+                        minHeight: 12,
+                        backgroundColor: const Color(0xFFC7D2FE),
+                        color: const Color(0xFF4F46E5),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: switch (_step) {
+                  _Step.host => _hostStep(),
+                  _Step.phone => _phoneStep(),
+                  _Step.name => _nameStep(),
+                  _Step.appointment => _appointmentStep(),
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );

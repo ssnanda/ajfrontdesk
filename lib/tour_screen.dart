@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'checkin_request.dart';
 import 'checkin_success_dialog.dart';
-import 'phone_formatter.dart';
+import 'phone_keypad.dart';
 import 'reception_api_service.dart';
 
 /// Tour: a prospect here to look at suites. No host to pick; the point is capturing their details.
@@ -43,6 +43,47 @@ class _TourScreenState extends State<TourScreen> {
     _teamSize.dispose();
     _notes.dispose();
     super.dispose();
+  }
+
+  Future<void> _openKeypad() async {
+    FocusScope.of(context).unfocus();
+    await showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: const Color(0xFFEEF2FF),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(32))),
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ValueListenableBuilder<TextEditingValue>(
+                valueListenable: _phone,
+                builder: (_, value, _) => Text(
+                  value.text.isEmpty ? 'Phone Number' : value.text,
+                  style: TextStyle(fontSize: 44, fontWeight: FontWeight.w800, letterSpacing: 2, color: value.text.isEmpty ? Colors.black38 : const Color(0xFF115E59)),
+                ),
+              ),
+              const SizedBox(height: 12),
+              PhoneKeypad(controller: _phone),
+              const SizedBox(height: 8),
+              SizedBox(
+                width: 520,
+                height: 72,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0D9488)),
+                  onPressed: () => Navigator.of(sheetContext).pop(),
+                  child: const Text('Done', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    if (mounted) {
+      _formKey.currentState?.validate();
+    }
   }
 
   /// Keyboard-free typing aid: "@gmail.com" replaces whatever follows an "@" (or is added after the name), ".com" is appended.
@@ -119,16 +160,18 @@ class _TourScreenState extends State<TourScreen> {
   @override
   Widget build(BuildContext context) {
     final compact = MediaQuery.sizeOf(context).width < 600;
+    const teal = Color(0xFF0F766E);
     final decoration = InputDecoration(
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide.none,
-      ),
+      labelStyle: const TextStyle(fontSize: 22),
+      floatingLabelStyle: const TextStyle(fontSize: 22, fontWeight: FontWeight.w600, color: teal),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(18), borderSide: BorderSide.none),
+      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(18), borderSide: const BorderSide(color: Color(0xFF99F6E4), width: 2)),
+      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(18), borderSide: const BorderSide(color: Color(0xFF14B8A6), width: 3)),
       filled: true,
-      fillColor: Colors.grey[100],
-      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+      fillColor: Colors.white,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 26),
     );
-    const fieldStyle = TextStyle(fontSize: 20);
+    const fieldStyle = TextStyle(fontSize: 26, fontWeight: FontWeight.w600);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Tour')),
@@ -140,8 +183,8 @@ class _TourScreenState extends State<TourScreen> {
               constraints: const BoxConstraints(maxWidth: 640),
               child: Card(
                 elevation: 0,
-                color: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                color: const Color(0xFFF0FDFA),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
                 margin: EdgeInsets.all(compact ? 12 : 32),
                 child: Padding(
                   padding: EdgeInsets.all(compact ? 20 : 48),
@@ -153,33 +196,35 @@ class _TourScreenState extends State<TourScreen> {
                       children: [
                         const Text(
                           'Tell Us About Yourself',
-                          style: TextStyle(fontSize: 28, fontWeight: FontWeight.w600),
+                          style: TextStyle(fontSize: 40, fontWeight: FontWeight.w800, color: Color(0xFF115E59)),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 32),
                         TextFormField(
                           controller: _name,
                           textCapitalization: TextCapitalization.words,
-                          decoration: decoration.copyWith(labelText: 'Full Name', prefixIcon: const Icon(Icons.person_outline)),
+                          decoration: decoration.copyWith(labelText: 'Full Name', prefixIcon: const Icon(Icons.person_outline, size: 30, color: teal)),
                           style: fieldStyle,
                           validator: (v) => v == null || v.trim().isEmpty ? 'Name is required' : null,
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 26),
                         TextFormField(
                           controller: _phone,
-                          keyboardType: TextInputType.number,
-                          inputFormatters: const [PhoneDashFormatter()],
-                          decoration: decoration.copyWith(labelText: 'Phone Number', prefixIcon: const Icon(Icons.phone_outlined)),
+                          readOnly: true, // tap to open the big keypad
+                          showCursor: false,
+                          keyboardType: TextInputType.none,
+                          onTap: _openKeypad,
+                          decoration: decoration.copyWith(labelText: 'Phone Number', prefixIcon: const Icon(Icons.phone_outlined, size: 30, color: teal)),
                           style: fieldStyle,
-                          validator: (v) => v == null || v.trim().isEmpty ? 'Phone is required' : null,
+                          validator: (v) => v == null || v.trim().length < 10 ? 'Enter all 10 digits' : null,
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 26),
                         TextFormField(
                           controller: _email,
                           keyboardType: TextInputType.emailAddress,
                           autocorrect: false,
                           enableSuggestions: false,
-                          decoration: decoration.copyWith(labelText: 'Email', prefixIcon: const Icon(Icons.mail_outline)),
+                          decoration: decoration.copyWith(labelText: 'Email', prefixIcon: const Icon(Icons.mail_outline, size: 30, color: teal)),
                           style: fieldStyle,
                           validator: (v) {
                             final t = v?.trim() ?? '';
@@ -194,20 +239,22 @@ class _TourScreenState extends State<TourScreen> {
                           children: [
                             for (final shortcut in const ['@gmail.com', '@yahoo.com', '@outlook.com', '@icloud.com', '.com'])
                               ActionChip(
-                                label: Text(shortcut, style: const TextStyle(fontSize: 16)),
+                                label: Text(shortcut, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
+                                backgroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
                                 onPressed: () => _addEmailShortcut(shortcut),
                               ),
                           ],
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 26),
                         TextFormField(
                           controller: _company,
                           textCapitalization: TextCapitalization.words,
-                          decoration: decoration.copyWith(labelText: 'Company (optional)', prefixIcon: const Icon(Icons.business_outlined)),
+                          decoration: decoration.copyWith(labelText: 'Company (optional)', prefixIcon: const Icon(Icons.business_outlined, size: 30, color: teal)),
                           style: fieldStyle,
                         ),
                         const SizedBox(height: 28),
-                        const Text('What are you looking for?', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+                        const Text('What are you looking for?', style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: Color(0xFF115E59))),
                         const SizedBox(height: 12),
                         Wrap(
                           spacing: 10,
@@ -215,21 +262,24 @@ class _TourScreenState extends State<TourScreen> {
                           children: [
                             for (final option in _interests)
                               FilterChip(
-                                label: Text(option, style: const TextStyle(fontSize: 17)),
+                                label: Text(option, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w600)),
                                 selected: _selected.contains(option),
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+                                selectedColor: const Color(0xFF5EEAD4),
+                                checkmarkColor: const Color(0xFF115E59),
+                                backgroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
                                 onSelected: (on) => setState(() => on ? _selected.add(option) : _selected.remove(option)),
                               ),
                           ],
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 26),
                         TextFormField(
                           controller: _teamSize,
                           keyboardType: TextInputType.number,
-                          decoration: decoration.copyWith(labelText: 'How many people? (optional)', prefixIcon: const Icon(Icons.groups_outlined)),
+                          decoration: decoration.copyWith(labelText: 'How many people? (optional)', prefixIcon: const Icon(Icons.groups_outlined, size: 30, color: teal)),
                           style: fieldStyle,
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 26),
                         TextFormField(
                           controller: _notes,
                           maxLines: 3,
@@ -238,16 +288,16 @@ class _TourScreenState extends State<TourScreen> {
                         ),
                         const SizedBox(height: 40),
                         SizedBox(
-                          height: 64,
+                          height: 84,
                           child: ElevatedButton(
                             onPressed: _isSubmitting ? null : _submit,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Theme.of(context).colorScheme.primary,
-                              foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                              backgroundColor: const Color(0xFF0D9488),
+                              foregroundColor: Colors.white,
                             ),
                             child: _isSubmitting
                                 ? const CircularProgressIndicator(color: Colors.white)
-                                : const Text('Submit', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                                : const Text('Submit', style: TextStyle(fontSize: 30, fontWeight: FontWeight.w800)),
                           ),
                         ),
                       ],
