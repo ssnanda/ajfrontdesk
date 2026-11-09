@@ -24,7 +24,8 @@ Future<void> showCheckInSuccessDialog(
             const SizedBox(height: 16),
             const Text('Guest ID', style: TextStyle(fontSize: 14, color: Colors.black54)),
             Text(
-              guestCode,
+              // G-20261109-001 -> 001: guests only see their number for the day; staff see the full ID in AJOps.
+              guestCode.split('-').last,
               style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w700, letterSpacing: 1),
             ),
           ],

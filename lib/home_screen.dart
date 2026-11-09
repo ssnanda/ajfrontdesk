@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'app_config.dart';
 import 'setup_screen.dart';
-import 'returning_visitor_screen.dart';
 import 'checkin_flow_screen.dart';
 import 'tour_screen.dart';
 import 'action_tile.dart';
@@ -78,16 +77,6 @@ class HomeScreen extends StatelessWidget {
                             onPressed: () => Navigator.push(
                               context,
                               MaterialPageRoute(builder: (_) => const CheckInFlowScreen()),
-                            ),
-                          ),
-                          ActionTile(
-                            title: 'Returning Visitor',
-                            icon: Icons.person_search_rounded,
-                            onPressed: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const ReturningVisitorScreen(),
-                              ),
                             ),
                           ),
                         ],

@@ -4,21 +4,21 @@ import 'package:flutter/material.dart';
 
 import 'checkin_request.dart';
 import 'checkin_success_dialog.dart';
+import 'phone_formatter.dart';
 import 'reception_api_service.dart';
 import 'reception_host.dart';
 
-/// Check-in as a short conversation: who are you here to see -> your name and number -> do you have an appointment.
-/// The search box sits at the top, so the results list gets all the room between it and the keyboard.
+/// Check-in as a short conversation: who are you here to see -> your phone number (a returning guest's name is filled in
+/// from it) -> your name -> do you have an appointment. The search box sits at the top, so the results list gets all the
+/// room between it and the keyboard.
 class CheckInFlowScreen extends StatefulWidget {
-  const CheckInFlowScreen({super.key, this.initialPhone});
-
-  final String? initialPhone;
+  const CheckInFlowScreen({super.key});
 
   @override
   State<CheckInFlowScreen> createState() => _CheckInFlowScreenState();
 }
 
-enum _Step { host, details, appointment }
+enum _Step { host, phone, name, appointment }
 
 class _CheckInFlowScreenState extends State<CheckInFlowScreen> {
   final _api = ReceptionApiService();
@@ -26,7 +26,8 @@ class _CheckInFlowScreenState extends State<CheckInFlowScreen> {
   final _searchFocus = FocusNode();
   final _name = TextEditingController();
   final _phone = TextEditingController();
-  final _detailsKey = GlobalKey<FormState>();
+  final _phoneKey = GlobalKey<FormState>();
+  final _nameKey = GlobalKey<FormState>();
 
   _Step _step = _Step.host;
   ReceptionHost? _host;
@@ -37,12 +38,8 @@ class _CheckInFlowScreenState extends State<CheckInFlowScreen> {
   String? _searchError;
   String _query = '';
   bool _submitting = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _phone.text = widget.initialPhone ?? '';
-  }
+  bool _lookingUp = false;
+  bool _returning = false; // the phone number matched a guest we already know
 
   @override
   void dispose() {
@@ -100,7 +97,7 @@ class _CheckInFlowScreenState extends State<CheckInFlowScreen> {
     _searchFocus.unfocus();
     setState(() {
       _host = host;
-      _step = _Step.details;
+      _step = _Step.phone;
     });
   }
 
@@ -108,15 +105,47 @@ class _CheckInFlowScreenState extends State<CheckInFlowScreen> {
     switch (_step) {
       case _Step.host:
         Navigator.of(context).maybePop();
-      case _Step.details:
+      case _Step.phone:
         setState(() => _step = _Step.host);
+      case _Step.name:
+        setState(() => _step = _Step.phone);
       case _Step.appointment:
-        setState(() => _step = _Step.details);
+        setState(() => _step = _Step.name);
     }
   }
 
-  void _next() {
-    if (_detailsKey.currentState!.validate()) {
+  /// Looks the number up: a known guest gets their name filled in, anyone else is asked for it.
+  Future<void> _phoneNext() async {
+    if (!_phoneKey.currentState!.validate() || _lookingUp) {
+      return;
+    }
+    FocusScope.of(context).unfocus();
+    setState(() => _lookingUp = true);
+    var returning = false;
+    try {
+      final visitor = await _api.lookupByPhone(_phone.text.trim());
+      if (visitor != null && visitor.name.trim().isNotEmpty) {
+        _name.text = visitor.name.trim();
+        returning = true;
+      } else {
+        _name.clear();
+      }
+    } catch (_) {
+      // Lookup is a convenience: if it fails, just ask for the name.
+      _name.clear();
+    }
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _lookingUp = false;
+      _returning = returning;
+      _step = _Step.name;
+    });
+  }
+
+  void _nameNext() {
+    if (_nameKey.currentState!.validate()) {
       FocusScope.of(context).unfocus();
       setState(() => _step = _Step.appointment);
     }
@@ -251,48 +280,70 @@ class _CheckInFlowScreenState extends State<CheckInFlowScreen> {
     );
   }
 
-  Widget _detailsStep() {
+  Widget _formStep({required GlobalKey<FormState> formKey, required String question, required Widget field, required VoidCallback onNext, bool busy = false}) {
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
       child: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 640),
           child: Form(
-            key: _detailsKey,
+            key: formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                _question('Great, ${_host?.label}. What\'s your name and number?'),
-                TextFormField(
-                  controller: _name,
-                  autofocus: true,
-                  textCapitalization: TextCapitalization.words,
-                  textInputAction: TextInputAction.next,
-                  style: const TextStyle(fontSize: 22),
-                  decoration: _decoration('Full Name', Icons.person_outline),
-                  validator: (v) => v == null || v.trim().isEmpty ? 'Name is required' : null,
-                ),
-                const SizedBox(height: 20),
-                TextFormField(
-                  controller: _phone,
-                  keyboardType: TextInputType.phone,
-                  style: const TextStyle(fontSize: 22),
-                  decoration: _decoration('Phone Number', Icons.phone_outlined),
-                  validator: (v) => v == null || v.trim().isEmpty ? 'Phone is required' : null,
-                  onFieldSubmitted: (_) => _next(),
-                ),
+                _question(question),
+                field,
                 const SizedBox(height: 32),
                 SizedBox(
                   height: 64,
                   child: ElevatedButton(
-                    onPressed: _next,
-                    child: const Text('Next', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                    onPressed: busy ? null : onNext,
+                    child: busy
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : const Text('Next', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
                   ),
                 ),
               ],
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _phoneStep() {
+    return _formStep(
+      formKey: _phoneKey,
+      question: 'What\'s your phone number?',
+      busy: _lookingUp,
+      onNext: _phoneNext,
+      field: TextFormField(
+        controller: _phone,
+        autofocus: true,
+        keyboardType: TextInputType.number,
+                          inputFormatters: const [PhoneDashFormatter()],
+        style: const TextStyle(fontSize: 22),
+        decoration: _decoration('Phone Number', Icons.phone_outlined),
+        validator: (v) => v == null || v.trim().isEmpty ? 'Phone is required' : null,
+        onFieldSubmitted: (_) => _phoneNext(),
+      ),
+    );
+  }
+
+  Widget _nameStep() {
+    final first = _name.text.trim().split(RegExp(r'\s+')).first;
+    return _formStep(
+      formKey: _nameKey,
+      question: _returning ? 'Welcome back, $first! Is this your name?' : 'Nice to meet you! What\'s your name?',
+      onNext: _nameNext,
+      field: TextFormField(
+        controller: _name,
+        autofocus: true,
+        textCapitalization: TextCapitalization.words,
+        style: const TextStyle(fontSize: 22),
+        decoration: _decoration('Full Name', Icons.person_outline),
+        validator: (v) => v == null || v.trim().isEmpty ? 'Name is required' : null,
+        onFieldSubmitted: (_) => _nameNext(),
       ),
     );
   }
@@ -347,7 +398,8 @@ class _CheckInFlowScreenState extends State<CheckInFlowScreen> {
         body: SafeArea(
           child: switch (_step) {
             _Step.host => _hostStep(),
-            _Step.details => _detailsStep(),
+            _Step.phone => _phoneStep(),
+            _Step.name => _nameStep(),
             _Step.appointment => _appointmentStep(),
           },
         ),

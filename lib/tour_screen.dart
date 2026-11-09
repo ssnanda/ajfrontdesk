@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'checkin_request.dart';
 import 'checkin_success_dialog.dart';
+import 'phone_formatter.dart';
 import 'reception_api_service.dart';
 
 /// Tour: a prospect here to look at suites. No host to pick; the point is capturing their details.
@@ -42,6 +43,27 @@ class _TourScreenState extends State<TourScreen> {
     _teamSize.dispose();
     _notes.dispose();
     super.dispose();
+  }
+
+  /// Keyboard-free typing aid: "@gmail.com" replaces whatever follows an "@" (or is added after the name), ".com" is appended.
+  void _addEmailShortcut(String shortcut) {
+    var text = _email.text.trim();
+    if (shortcut.startsWith('@')) {
+      final at = text.indexOf('@');
+      if (at >= 0) {
+        text = text.substring(0, at);
+      }
+      if (text.isEmpty) {
+        return; // type the name first
+      }
+      text += shortcut;
+    } else {
+      if (text.isEmpty || text.endsWith(shortcut)) {
+        return;
+      }
+      text += shortcut;
+    }
+    _email.value = TextEditingValue(text: text, selection: TextSelection.collapsed(offset: text.length));
   }
 
   /// Everything the visit record has no column for goes into its note, one labelled line each.
@@ -145,7 +167,8 @@ class _TourScreenState extends State<TourScreen> {
                         const SizedBox(height: 20),
                         TextFormField(
                           controller: _phone,
-                          keyboardType: TextInputType.phone,
+                          keyboardType: TextInputType.number,
+                          inputFormatters: const [PhoneDashFormatter()],
                           decoration: decoration.copyWith(labelText: 'Phone Number', prefixIcon: const Icon(Icons.phone_outlined)),
                           style: fieldStyle,
                           validator: (v) => v == null || v.trim().isEmpty ? 'Phone is required' : null,
@@ -154,6 +177,8 @@ class _TourScreenState extends State<TourScreen> {
                         TextFormField(
                           controller: _email,
                           keyboardType: TextInputType.emailAddress,
+                          autocorrect: false,
+                          enableSuggestions: false,
                           decoration: decoration.copyWith(labelText: 'Email', prefixIcon: const Icon(Icons.mail_outline)),
                           style: fieldStyle,
                           validator: (v) {
@@ -161,6 +186,18 @@ class _TourScreenState extends State<TourScreen> {
                             if (t.isEmpty) return 'Email is required';
                             return RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(t) ? null : 'Enter a valid email';
                           },
+                        ),
+                        const SizedBox(height: 10),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            for (final shortcut in const ['@gmail.com', '@yahoo.com', '@outlook.com', '@icloud.com', '.com'])
+                              ActionChip(
+                                label: Text(shortcut, style: const TextStyle(fontSize: 16)),
+                                onPressed: () => _addEmailShortcut(shortcut),
+                              ),
+                          ],
                         ),
                         const SizedBox(height: 20),
                         TextFormField(
