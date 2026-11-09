@@ -15,12 +15,12 @@
       "screenshotURLs": [],
       "versions": [
         {
-          "version": "1.0.6",
-          "buildVersion": "7",
+          "version": "1.0.7",
+          "buildVersion": "8",
           "date": "2026-11-09",
-          "localizedDescription": "Build 1.0.6+7",
+          "localizedDescription": "Build 1.0.7+8",
           "downloadURL": "https://github.com/ssnanda/ajfrontdesk/releases/download/ios-latest/ajfrontdesk.ipa",
-          "size": 7507933,
+          "size": 7482293,
           "minOSVersion": "13.0"
         }
       ]
