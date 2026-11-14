@@ -17,10 +17,10 @@
         {
           "version": "1.0.8",
           "buildVersion": "9",
-          "date": "2026-11-09",
+          "date": "2026-11-14",
           "localizedDescription": "Build 1.0.8+9",
           "downloadURL": "https://github.com/ssnanda/ajfrontdesk/releases/download/ios-latest/ajfrontdesk.ipa",
-          "size": 7519896,
+          "size": 7519898,
           "minOSVersion": "13.0"
         }
       ]
